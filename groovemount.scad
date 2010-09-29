@@ -108,7 +108,7 @@ module separate(base=false){
 		}
 	}
 	if (base==false) {
-		and(){
+		intersection(){
 			base();
 			separator();
 		}
