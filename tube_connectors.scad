@@ -2,6 +2,7 @@
 // Licensed as GPL 2 or later
 
 include <MCAD/units.scad>
+include <MCAD/materials.scad>
 use <MCAD/shapes.scad>
 
 // Different kinds of tube connectors etc.
@@ -11,7 +12,7 @@ use <MCAD/shapes.scad>
 // contactlen is the actual lenght of tube on connector
 
 //Use an even number of out connectors
-module star_connector(out_no=6, in, out){
+module star_connector(out_no=6, in, out, demo=false){
     thickness = out[0];
     translate([0, 0, thickness/2]) union(){
         difference(){
@@ -20,9 +21,13 @@ module star_connector(out_no=6, in, out){
                     ngon(out_no, radius=out[2], center=true);
                 translate([0, 0, out[2]/2+0.1])
                     cylinder(r=in[0]/2, h=out[2]+thickness, center=true);
-                for (i = [0:out_no/2]){
-                    rotate([0, 90, 360*i/out_no])
-                        cylinder(r=out[0]/2, h=out[2]*4, center=true);
+                for (i = [0:out_no]){
+                    rotate([0, 90, 360*i/out_no]) union(){
+                        translate([0, 0, out[2]]) cylinder(r=out[0]/2, h=out[2]*2, center=true);
+                        if (demo==true){
+                            translate([0, 0, 5*mm+out[2]]) color(BlackPaint) tube2(OD=out[1], ID=out[0], height=7*cm);
+                        }
+                    }
                 }
             }
             for (i = [0:out_no/2]){
@@ -42,7 +47,7 @@ tube1 = [10*mm, 12*mm, 20*mm];
 tube2 = [10*mm, 12*mm, 20*mm];
 
 module test_star_connector(){
-    star_connector(out_no=6, in=tube1, out=tube2);
+    star_connector(out_no=6, in=tube1, out=tube2, demo=true);
 }
 
 test_star_connector();

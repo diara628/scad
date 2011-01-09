@@ -13,25 +13,29 @@ include <MCAD/units.scad>
 use <MCAD/shapes.scad>
 
 // Plant hole dimensions
-width = 7*cm;
-length = 9.5*cm;
+width = 6*cm;
+length = width*1.34;
 
 // Tube holder
 tubeOD = 12*mm;
 
 screw_hole = 4*mm;
 
-union(){
-    linear_extrude(height=10*mm)
-    difference(){
-        union(){
-            egg_outline(width=width+10*mm, length=length+10*mm);
-            translate([0, -1*cm, 0]) cross(5*cm+width, 5*cm+length, 2*cm);
+module plant_holder(){
+    union(){
+        linear_extrude(height=10*mm)
+        difference(){
+            union(){
+                egg_outline(width=width+10*mm, length=length+10*mm);
+                translate([0, -1*cm, 0]) cross(5*cm+width, 5*cm+length, 2*cm);
+            }
+            egg_outline(width=width, length=length);
         }
-        egg_outline(width=width, length=length);
+        translate([0, width/2+20*mm, 20*mm]) tube_holder();
     }
-    translate([0, width/2+20*mm, 20*mm]) tube_holder();
 }
+
+module plant_hole(){egg_outline(width=width, length=length);}
 
 module cross(x, y, thickness){
     union(){
