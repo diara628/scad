@@ -6,8 +6,8 @@ use <plant_holder.scad>
 use <tube_connectors.scad>
 
 // Container dimensions:
-diameter = 40*cm;
-height = 30*cm;
+diameter = 25*cm;
+height = 26*cm;
 wt = 2*mm; // Wall thickness of the container
 nh = 6; // Number of plant holes
 

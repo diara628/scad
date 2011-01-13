@@ -13,8 +13,8 @@ include <MCAD/units.scad>
 use <MCAD/shapes.scad>
 
 // Plant hole dimensions
-width = 6*cm;
-length = width*1.34;
+width = 5.5*cm;
+length = width*1.35;
 
 // Tube holder
 tubeOD = 12*mm;
