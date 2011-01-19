@@ -11,6 +11,7 @@
 
 include <MCAD/units.scad>
 use <MCAD/shapes.scad>
+use <MCAD/regular_shapes.scad>
 
 // Plant hole dimensions
 width = 5.5*cm;
@@ -27,7 +28,7 @@ module plant_holder(){
         difference(){
             union(){
                 egg_outline(width=width+10*mm, length=length+10*mm);
-                translate([0, -1*cm, 0]) cross(5*cm+width, 5*cm+length, 2*cm);
+                translate([0, -0.9*cm, 0]) cross(3.5*cm+width, 3*cm+length, 2*cm);
             }
             egg_outline(width=width, length=length);
         }
@@ -42,7 +43,7 @@ module cross(x, y, thickness){
         difference(){
             square([x, thickness], center=true);
             for(i = [-1, 1]){
-                translate([i*(x/2-screw_hole-5*mm), 0, 0]) circle(r=screw_hole, center=true);
+                translate([i*(x/2-screw_hole-3*mm), 0, 0]) circle(r=screw_hole, center=true);
             }
         }
         square([thickness, y], center=true);
@@ -57,5 +58,5 @@ module tube_holder(){
     }
 }
 
-//plant_holder();
+plant_holder();
 
