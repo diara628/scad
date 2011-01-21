@@ -54,7 +54,7 @@ module tube_holder(){
     difference(){
         box(20*mm, 10*mm, 40*mm);
         translate([0, 0, 10*mm]) rotate([90, 0, 0])
-            cylinder(r=tubeOD/2+0.5*mm, h=20*mm, center=true);
+            cylinder(r=1.2*tubeOD/2, h=20*mm, center=true);
     }
 }
 
