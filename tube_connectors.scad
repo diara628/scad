@@ -11,13 +11,15 @@ use <MCAD/shapes.scad>
 // connector(in=[ID, OD, contactlen], out=[ID, OD, contactlen])
 // contactlen is the actual lenght of tube on connector
 
+// placement is either "flat" or "corner"
+
 //Usable for 3-6 out connectors
-module star_connector(out_no=6, in, out, demo=false){
+module star_connector(out_no=6, in, out, placement="corner", demo=false){
     thickness = out[0];
     translate([0, 0, thickness/2]) union(){
         difference(){
             union(){
-                symmetric_star_connector(no=out_no, tube=out, center=true, demo=demo);
+                symmetric_star_connector(no=out_no, tube=out, placement=placement, center=true, demo=demo);
                 translate([0, 0, thickness/2-0.1])
                     cylinder(r=in[0]/2, h=out[2]);
             }
@@ -28,16 +30,17 @@ module star_connector(out_no=6, in, out, demo=false){
 }
 
 //Usable for 3-6 connectors
-module symmetric_star_connector(no=3, tube, center=false, demo=false){
+module symmetric_star_connector(no=3, tube, placement="corner", center=false, demo=false){
     thickness = tube[0];
     raise = center ? 0 : thickness/2;
+    placement = placement=="flat" ? 0 : 0.5;
     translate([0, 0, raise]) union(){
         difference(){
             union(){
                 linear_extrude(height=thickness, center=true)
                     ngon(sides=no, radius=tube[2], center=true);
                 for (i = [0:no]){
-                    rotate([0, 90, 360*i/no]) union(){
+                    rotate([0, 90, 360*(i+placement)/no]) union(){
                         translate([0, 0, tube[2]]) rotate([0, 0, 360/40])
                             cylinder(r=1.0125*tube[0]/2, h=tube[2]*2, center=true, $fn=20);
                         if (demo==true){
@@ -48,7 +51,7 @@ module symmetric_star_connector(no=3, tube, center=false, demo=false){
                 }
             }
             for (i = [0:no]){
-                rotate([0, 90, 360*i/no])
+                rotate([0, 90, 360*(i+placement)/no])
                     translate([0, 0, tube[2]]) cylinder(r=0.6*tube[0]/2, h=tube[2]*2+0.1, center=true);
             }
         }
@@ -84,3 +87,5 @@ module test_symmetric_star_connector(){
 }
 
 //test_symmetric_star_connector();
+
+symmetric_star_connector(no=3, tube=tube1, placement="corner", demo=false);
