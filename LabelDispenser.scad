@@ -5,29 +5,31 @@
  */
 
 use <MCAD/regular_shapes.scad>
+//use <MCAD/transformations.scad>
 
 // Parameters:
 label_width = 29; // This is the most important one
-dy = 80;
-height = 63;
-thickness_y = 5;
-drum_dia = 34;
+min_dx = 80;
+min_height = 63;
+drum_dia = 33;
+wall_thickness = 4;
 
-
-// A switch for for orienting and placing for printing or demoing:
-mode = "demo";
-//mode = "print";
 
 // Create a roll holder?
-//inner_roll_holder = true;
-inner_roll_holder = false;
+inner_roll_holder = true;
+//inner_roll_holder = false;
 
-max_roll_OD = 50; // TODO Not really used
+max_roll_OD = 30;
 min_roll_ID = 10;
 
 // Use a roller?
 roller = true;
 //roller = false;
+
+
+// A switch for orienting and placing for printing or demoing:
+mode = "demo";
+//mode = "print";
 
 
 if (mode == "print") {
@@ -36,25 +38,32 @@ rotate([90, 0, 0]) dispenser();
 dispenser();
 }
 
-width = label_width + thickness_y*2;
-drum_placement = [drum_dia/2,width,40];
+dx = inner_roll_holder ? max(max_roll_OD+drum_dia+wall_thickness*2, min_dx) : min_dx;
+height = inner_roll_holder ? max(max_roll_OD+drum_dia/2+wall_thickness*2, min_height) : min_height;
+
+width = label_width + wall_thickness*2;
+drum_placement = [drum_dia/2,width,height-wall_thickness*3/2-drum_dia/2];
 axle_side = sqrt(pow(min_roll_ID-4-0.1, 2)/2);
-guard_rotation = 10;
+guard_rotation = 25;
+
 
 module dispenser()
 {
 difference()
 {
-  ensemble();
+  union()
+  {
+    intersection()
+    {
+      drum();
+      body();
+    }
+    ensemble();
+  }
   slot(rear=!inner_roll_holder);
-  translate([8,+thickness_y,52]) rotate([0,-20,0])
-    #cube([11,width,10]);
+  translate([10,wall_thickness,height-wall_thickness*4]) rotate([0,-20,0])
+    cube([11,width,wall_thickness*4]);
   roll_guard(mode="negative");
-}
-intersection()
-{
-  drum();
-  body();
 }
 
 if (inner_roll_holder)
@@ -66,24 +75,24 @@ if (inner_roll_holder)
 {
   // add a guide
   rotate([0,8,0]) translate([23,0,height-7])
-    cube([dy-31,width,1]);
+    cube([dx-31,width,1]);
 }
 }
 
 
-plate_offset = [drum_dia/2+drum_placement[0], 0, 3];
-plate_size = [dy-plate_offset[0], thickness_y, drum_placement[2]];
+plate_offset = [drum_dia/2+drum_placement[0]-wall_thickness, 0, 3];
+plate_size = [dx-plate_offset[0], wall_thickness-1, drum_placement[2]];
 axle_placement = plate_offset + [plate_size[0]/2, 0, plate_size[2]/2];
 
 module roll_holder(mode=mode)
 {
 
 roller_placement = mode == "demo" ? axle_placement :
-                   mode == "print"? [min_roll_ID-1, -thickness_y, height+4-min_roll_ID] :
+                   mode == "print"? [min_roll_ID-1, -wall_thickness, height+4-min_roll_ID] :
                    false;
 
-echo(str("Rolls with OD < ", plate_size[0], " and ID > ",
-     min_roll_ID+2, " should fit"));
+echo(str("Rolls with OD < ", min(plate_size[0], plate_size[2])-wall_thickness*2, " and ID > ",
+     min_roll_ID, " should fit"));
 
 union()
 {
@@ -97,18 +106,18 @@ union()
     if (roller != false)
     {
       color([0.5, 1, 0]) translate(roller_placement) rotate([90,0,0])
-        cylinder_tube(height=width-2*thickness_y, radius=min_roll_ID/2,
+        cylinder_tube(height=width-2*wall_thickness, radius=min_roll_ID/2,
                       wall=2, center=true, $fn=50);
     }
   }
 }
 }
 
-module roll_guard(mode=mode, thickness=thickness_y/2, rotation = guard_rotation)
+module roll_guard(mode=mode, thickness=wall_thickness/2, rotation = guard_rotation)
 {
   scale = mode == "negative" ? [1.0, 5, 1] : [1, 1, 1];
   mode = mode == "negative" ? "demo" : mode;
-  placement = mode == "demo" ? axle_placement + [0, width-thickness_y, 0]:
+  placement = mode == "demo" ? axle_placement + [0, width-wall_thickness, 0]:
               mode == "print"? [0, 0, height-10-min_roll_ID] :
               [0, 0, 0];
 
@@ -119,7 +128,7 @@ module roll_guard(mode=mode, thickness=thickness_y/2, rotation = guard_rotation)
     {
       color([0.1, 0.3, 0]) union()
       {
-        cube([plate_size[0]*1.2, thickness, thickness], center=true);
+        cube([plate_size[0]*1.25, thickness, thickness], center=true);
         cylinder(r=min_roll_ID, h=thickness, center=true);
       }
       cube([axle_side, axle_side, thickness*2], center=true);
@@ -131,8 +140,8 @@ module drum()
   difference()
   {
 
-    drum_part(diameter=drum_dia-4,width=width-thickness_y);
-    translate([0,thickness_y,0])
+    drum_part(diameter=drum_dia-4,width=width-wall_thickness);
+    translate([0,wall_thickness,0])
       drum_part(diameter=drum_dia-10);
   }
 }
@@ -144,7 +153,7 @@ union()
   difference()
   {
   body();
-  translate([0,thickness_y,0])
+  translate([0,wall_thickness,0])
     drum_part();
 
   cutout();
@@ -154,13 +163,13 @@ union()
     intersection()
     {
       body();
-      drum_part(diameter=drum_dia+(thickness_y-1)*2);
+      drum_part(diameter=drum_dia+(wall_thickness)*2);
     }
-    translate([0,0.99,0])
-      drum_part(width=width-thickness_y+1);
+    translate([0,0.1,0])
+      drum_part(width=width-wall_thickness);
 
   }
-  foot(dy,width,3);
+  foot(dx,width,3);
 
 }
 
@@ -172,27 +181,33 @@ translate(drum_placement) rotate([90,0,0])
   cylinder(r=diameter/2,h=width);
 }
 
+function scaling_factor(dimension) = (dimension-wall_thickness*2)/dimension;
+
 module cutout()
 {
- scale([0.9,1.2,0.9]) translate([thickness_y,-0.1,thickness_y])
-  body();
+reference = [dx/2, width/2, height/2];
+translate([wall_thickness,-0.1,wall_thickness])
+//translate(reference)
+//scale([scaling_factor(dx),1.2,scaling_factor(width)])
+  //translate(-reference)
+  body(scaling_factor(dx)*dx, 1.2*width, scaling_factor(height)*height);
 }
 
-module body()
+module body(dx=dx, width=width, height=height)
 {
 intersection()
 {
-cube([dy,width,height]);
-rotate([0,15,0]) cube([dy*2,width,height*2]);
+cube([dx,width,height]);
+rotate([0,15,0]) cube([dx*2,width,height*2]);
 }
 }
 
 module slot(rear=true)
 {
-rotate([0,5,0]) translate([-dy/2,thickness_y,height-1]) cube([dy,label_width,1]);
+rotate([0,12,0]) translate([-dx/2,wall_thickness,height-wall_thickness+3]) cube([dx,label_width,1]);
 if (rear == true)
 {
-  #translate([dy-30/2,thickness_y,height-16]) cube([30,label_width,4]);
+  translate([dx-30/2,wall_thickness,height-16]) cube([30,label_width,4]);
 }
 }
 
