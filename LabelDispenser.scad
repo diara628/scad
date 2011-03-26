@@ -19,7 +19,7 @@ wall_thickness = 4;
 inner_roll_holder = true;
 //inner_roll_holder = false;
 
-max_roll_OD = 30;
+max_roll_OD = 60;
 min_roll_ID = 10;
 
 // Use a roller?
