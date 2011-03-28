@@ -19,14 +19,20 @@ wall_thickness = 4;
 inner_roll_holder = true;
 //inner_roll_holder = false;
 
-max_roll_OD = 60;
+max_roll_OD = 30;
 min_roll_ID = 10;
 
 // Use a roller?
 roller = true;
 //roller = false;
 
+// Handle?
 add_handle = true;
+
+handle_dia = 20;
+handle_lenght =  60;
+handle_wall_thickness = 2;
+
 
 // A switch for orienting and placing for printing or demoing:
 mode = "demo";
@@ -46,7 +52,7 @@ width = label_width + wall_thickness*2;
 drum_placement = [drum_dia/2,width,height-wall_thickness*3/2-drum_dia/2];
 axle_side = sqrt(pow(min_roll_ID-4-0.1, 2)/2);
 guard_rotation = 25;
-
+handle_placement = drum_placement[0]+wall_thickness;
 
 module dispenser()
 {
@@ -60,11 +66,13 @@ difference()
       body();
     }
     ensemble();
+    translate([handle_placement, width/2, 10/2]) cube([27+wall_thickness, width, 10], center=true);
   }
   slot(rear=!inner_roll_holder);
   translate([10,wall_thickness,height-wall_thickness*4]) rotate([0,-20,0])
     cube([11,width,wall_thickness*4]);
   roll_guard(mode="negative");
+  translate([handle_placement, width-handle_dia/2, 0]) interfaceSlot(len=width, neg=true);
 }
 
 if (inner_roll_holder)
@@ -80,7 +88,8 @@ if (inner_roll_holder)
 }
 
 if (add_handle) {
-  handle(mode=mode);}
+  handle(mode=mode);
+}
 
 }
 
@@ -140,15 +149,36 @@ module roll_guard(mode=mode, thickness=wall_thickness/2, rotation = guard_rotati
     }
 }
 
+module handle(mode=mode)
+{
+placement = mode == "demo" ? [handle_placement, width/2, -handle_lenght] :
+            mode == "print" ? [-handle_dia, handle_dia/2, 0] : [0, 0, 0];
+
+translate(placement) union()
+{
+  cylinder_tube(height=handle_lenght, radius=handle_dia/2, wall=handle_wall_thickness);
+  translate([0, 0, handle_lenght]) interfaceSlot(len=handle_dia);
+  intersection() {
+    cylinder(h=handle_lenght, r=handle_dia/2);
+    rotate([0, 0, 45]) union() {
+      cube([handle_dia, handle_wall_thickness, handle_lenght*3], center=true);
+      cube([handle_wall_thickness, handle_dia, handle_lenght*3], center=true);
+    }
+  }
+}
+}
+
 module interfaceShape(len, t, w) {
-	difference(){
-		translate([0, t/2, 0]) cube([w, t, len]);
+	rotate([90, 0, 0]) difference(){
+		translate([0, t/2, 0]) cube([w*2, t, len], center=true);
 		for (rot=[0, 180]){
-			rotate(rot, [0, 1, 0]) rotate(-30, [0,0,1]) translate([11.5,5,0]) cube([15,30,len+10]);
+			rotate([0, rot, 0]) rotate([0,0,-30]) translate([w*11.5/15,t*2,0])
+        cube([w,t*5,len+10], center=true);
 		}
 	}
 }
 
+//This is copied from another file, will make this more general and add it to MCAD
 module interfaceSlot(len, magr=false, magt=false, neg=false){
 	// You can import this to implement this interface in your gadget/mount
 
@@ -157,43 +187,23 @@ module interfaceSlot(len, magr=false, magt=false, neg=false){
 	// See finalWristmount for an example use
 
 	// These dimensions are suggestions. Good dimensions to be determined and standardised on
-	t=5;	//thickness
-	w=15;	//width of the bottom
+	t=8;	//thickness
+	w=20;	//width of the bottom
 	//deg=30 hardcoded for now
 
 	//module magnetSlot(){translate([0, t-magt, 0]) rotate(-90, [1, 0, 0]) cylinder(magt*2, r=magr);}
 
-	if (neg){
+	if (!neg){
 		union(){
 			interfaceShape(len, t, w);
 			//magnetSlot();
 		}
-	}
-	if (!neg) {
-		scale([-999/100]) difference(){
+	} else {
+		translate([0, 0, -0.01*t-0.01]) scale([1, 1.02, 1]) difference(){
 			interfaceShape(len, t, w);
 			//magnetSlot();
 		}
 	}
-}
-
-handle_dia = 20;
-handle_lenght =  60;
-
-module handle(mode="demo")
-{
-!union()
-{
-  cylinder_tube(height=handle_lenght, radius=handle_dia/2, wall=3);
-  interfaceSlot(len=handle_dia);
-  intersection() {
-    cylinder(h=handle_lenght, r=handle_dia/2);
-    union() {
-      cube([handle_dia, 3, handle_lenght*3], center=true);
-      #cube([3, handle_dia, handle_lenght*3], center=true);
-    }
-  }
-}
 }
 
 module drum()
