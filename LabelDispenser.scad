@@ -35,8 +35,8 @@ handle_wall_thickness = 2;
 
 
 // A switch for orienting and placing for printing or demoing:
-mode = "demo";
-//mode = "print";
+//mode = "demo";
+mode = "print";
 
 
 if (mode == "print") {
@@ -275,11 +275,28 @@ rotate([0,15,0]) cube([dx*2,width,height*2]);
 
 module slot(rear=true)
 {
-rotate([0,12,0]) translate([-dx/2,wall_thickness,height-wall_thickness+3]) cube([dx,label_width,1]);
+module slot3(){
+  union() {
+    cylinder(r=1.5/2*wall_thickness, h=label_width, center=true, $fn=20);
+  }
+}
+
+rotate([0,12,0]) translate([-dx/2,wall_thickness,height-wall_thickness+3])
+  cube([dx,label_width,1]);
+translate([drum_placement[0]+drum_dia/2-wall_thickness, label_width/2+wall_thickness,
+           drum_placement[1]-drum_dia/2+wall_thickness*1.5])
+  rotate([90, -45, 0]) difference() {
+    slot3();
+    translate([1, 0, 0]) scale([0.7, 0.7 ,2]) slot3();
+  }
+
 if (rear == true)
 {
-  translate([dx-30/2,wall_thickness,height-16]) cube([30,label_width,4]);
+  translate([dx-30/2,wall_thickness,height-16]) cube([30,label_width,3]);
 }
+
+translate([(drum_placement[0]+drum_dia)*1.1,wall_thickness+label_width/2, 0]) rotate([0, 50, 0])
+  cube([wall_thickness*4,label_width,3], center=true);
 }
 
 module foot(l,w,h)
