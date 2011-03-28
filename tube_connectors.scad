@@ -4,6 +4,7 @@
 include <MCAD/units.scad>
 include <MCAD/materials.scad>
 use <MCAD/shapes.scad>
+use <MCAD/utilities.scad>
 
 // Different kinds of tube connectors etc.
 
@@ -39,8 +40,8 @@ module symmetric_star_connector(no=3, tube, placement="corner", center=false, de
             union(){
                 linear_extrude(height=thickness, center=true)
                     ngon(sides=no, radius=tube[2], center=true);
-                for (i = [0:no]){
-                    rotate([0, 90, 360*(i+placement)/no]) union(){
+                spin(no, angle=360, axis=[0, 0, 1]){
+                    rotate([0, 90, placement*360/no]) union(){
                         translate([0, 0, tube[2]]) rotate([0, 0, 360/40])
                             cylinder(r=1.0125*tube[0]/2, h=tube[2]*2, center=true, $fn=20);
                         if (demo==true){
@@ -50,9 +51,9 @@ module symmetric_star_connector(no=3, tube, placement="corner", center=false, de
                     }
                 }
             }
-            for (i = [0:no]){
-                rotate([0, 90, 360*(i+placement)/no])
-                    translate([0, 0, tube[2]]) cylinder(r=0.6*tube[0]/2, h=tube[2]*2+0.1, center=true);
+            spin(no, angle=360, axis=[0, 0, 1]){
+                rotate([0, 90, placement*360/no]) translate([0, 0, tube[2]])
+                    cylinder(r=0.6*tube[0]/2, h=tube[2]*2+0.1, center=true);
             }
         }
     }
@@ -65,7 +66,7 @@ tube1 = [10*mm, 12*mm, 20*mm];
 tube2 = [10*mm, 12*mm, 20*mm];
 
 module test_star_connector_1to6(){
-    star_connector(out_no=3, in=tube1, out=tube2, demo=true);
+    star_connector(out_no=6, in=tube1, out=tube2, demo=true);
 }
 
 //test_star_connector_1to6();
@@ -88,4 +89,4 @@ module test_symmetric_star_connector(){
 
 //test_symmetric_star_connector();
 
-symmetric_star_connector(no=3, tube=tube1, placement="corner", demo=false);
+//symmetric_star_connector(no=3, tube=tube1, placement="corner", demo=false);
