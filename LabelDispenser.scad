@@ -26,6 +26,7 @@ min_roll_ID = 10;
 roller = true;
 //roller = false;
 
+add_handle = true;
 
 // A switch for orienting and placing for printing or demoing:
 mode = "demo";
@@ -77,6 +78,10 @@ if (inner_roll_holder)
   rotate([0,8,0]) translate([23,0,height-7])
     cube([dx-31,width,1]);
 }
+
+if (add_handle) {
+  handle(mode=mode);}
+
 }
 
 
@@ -133,6 +138,62 @@ module roll_guard(mode=mode, thickness=wall_thickness/2, rotation = guard_rotati
       }
       cube([axle_side, axle_side, thickness*2], center=true);
     }
+}
+
+module interfaceShape(len, t, w) {
+	difference(){
+		translate([0, t/2, 0]) cube([w, t, len]);
+		for (rot=[0, 180]){
+			rotate(rot, [0, 1, 0]) rotate(-30, [0,0,1]) translate([11.5,5,0]) cube([15,30,len+10]);
+		}
+	}
+}
+
+module interfaceSlot(len, magr=false, magt=false, neg=false){
+	// You can import this to implement this interface in your gadget/mount
+
+	// If neg==true, export the shape suitable for subtracting to make female slot
+	// If neg==false (default), gives a shape add for mating with a female slot
+	// See finalWristmount for an example use
+
+	// These dimensions are suggestions. Good dimensions to be determined and standardised on
+	t=5;	//thickness
+	w=15;	//width of the bottom
+	//deg=30 hardcoded for now
+
+	//module magnetSlot(){translate([0, t-magt, 0]) rotate(-90, [1, 0, 0]) cylinder(magt*2, r=magr);}
+
+	if (neg){
+		union(){
+			interfaceShape(len, t, w);
+			//magnetSlot();
+		}
+	}
+	if (!neg) {
+		scale([-999/100]) difference(){
+			interfaceShape(len, t, w);
+			//magnetSlot();
+		}
+	}
+}
+
+handle_dia = 20;
+handle_lenght =  60;
+
+module handle(mode="demo")
+{
+!union()
+{
+  cylinder_tube(height=handle_lenght, radius=handle_dia/2, wall=3);
+  interfaceSlot(len=handle_dia);
+  intersection() {
+    cylinder(h=handle_lenght, r=handle_dia/2);
+    union() {
+      cube([handle_dia, 3, handle_lenght*3], center=true);
+      #cube([3, handle_dia, handle_lenght*3], center=true);
+    }
+  }
+}
 }
 
 module drum()
