@@ -1,11 +1,17 @@
 include <MCAD/units.scad>
 
 use <MCAD/unregular_shapes.scad>
+use <MCAD/regular_shapes.scad>
+
+rod_thickness = 25*mm;
+
+structural_thickness = 5*mm;
 
 beak_size = 3*cm;
 beak_lenght = 15*cm;
 beak_tip_scale = 0.4;
 beak_tip_size = beak_tip_scale*beak_size;
+
 
 module beak(){
     for (i = [1, -1]){ // Mirroring
@@ -19,8 +25,14 @@ module beak(){
     }
 }
 
+module connector(){
+    translate([-rod_thickness, 0, 0]) cylinder_tube(height=.8*beak_size,
+               radius=rod_thickness+structural_thickness, wall=structural_thickness);
+}
+
 module assembly(){
     beak();
+    connector();
 }
 
 assembly();
